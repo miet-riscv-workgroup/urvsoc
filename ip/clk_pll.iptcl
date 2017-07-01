@@ -1,0 +1,38 @@
+# DO NOT EDIT BELOW
+# -----------------------------------------
+
+set filename [file tail [info script]]
+set ipname [file rootname $filename]
+
+set rootDir     "."
+set workDir     "$rootDir/tmp"
+set ipDir       "$workDir/ip"
+set done_marker "$workDir/$filename.ipdone"
+
+create_project -force $ipname $ipDir -part xc7a35ticsg324-1L -ip
+set obj [get_projects]
+set_property "simulator_language" "Mixed" $obj
+set_property "target_language" "Verilog"  $obj
+
+set_property target_simulator XSim [current_project]
+# -----------------------------------------
+# DO NOT EDIT ABOVE
+
+# PASTE XILINX TCL BELOW
+# Change ip name mentions to $ipname and specify "-dir $ipDir" after "-module_name $ipname" at the end of "create_ip" command
+
+create_ip -name clk_wiz -vendor xilinx.com -library ip -version 5.3 -module_name $ipname -dir $ipDir
+
+set_property -dict [list CONFIG.CLKOUT2_USED {true} CONFIG.CLKOUT3_USED {true} CONFIG.CLK_OUT2_PORT {dac_clk} CONFIG.CLK_OUT3_PORT {ndac_clk} CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {5.000} CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {5.000} CONFIG.CLKOUT3_REQUESTED_PHASE {180.000} CONFIG.USE_RESET {false} CONFIG.MMCM_DIVCLK_DIVIDE {1} CONFIG.MMCM_CLKFBOUT_MULT_F {7.000} CONFIG.MMCM_CLKOUT0_DIVIDE_F {7.000} CONFIG.MMCM_CLKOUT1_DIVIDE {128} CONFIG.MMCM_CLKOUT2_DIVIDE {128} CONFIG.MMCM_CLKOUT2_PHASE {179.297} CONFIG.NUM_OUT_CLKS {3} CONFIG.CLKOUT1_JITTER {149.337} CONFIG.CLKOUT1_PHASE_ERROR {122.577} CONFIG.CLKOUT2_JITTER {266.428} CONFIG.CLKOUT2_PHASE_ERROR {122.577} CONFIG.CLKOUT3_JITTER {266.428} CONFIG.CLKOUT3_PHASE_ERROR {122.577}] [get_ips $ipname]
+
+# 
+# PASTE XILINX TCL ABOVE
+
+# DO NOT EDIT BELOW
+# -----------------------------------------
+generate_target all [get_files  $ipname.xci]
+export_ip_user_files -of_objects [get_files $ipname.xci] -no_script -ip_user_files_dir $ipDir -force -quiet
+export_simulation -of_objects [get_files $ipname.xci] -force -quiet
+
+set marker [open $done_marker w+]
+close $marker
