@@ -6,4 +6,4 @@
 *.elf
 !common/*.S
 !uart_bootloader/crtboot.S
-
+!uart_bootloader/uart-bootloader.dat

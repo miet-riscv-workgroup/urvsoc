@@ -1,6 +1,6 @@
 #include "../common/board.h"
-#include "../common/uart.h"
-#include "../common/spi/wb_spi.h"
+#include "../common/uart/uart.h"
+#include "../common/spi/spi.h"
 #include "../common/irq/irq_c.h"
 
 #define BASE_CLOCK 100000000 // Xtal frequency
@@ -108,8 +108,8 @@ void irq_7_handler()
 main()
 {
   //uart_init_hw();
-  enable_all_irqs();
-  enable_irq_0();
+  irq_enable_all();
+  irq_set_mask(0x01);
   //disable_irq_0();
 
   spi_config.CS_GEN       = SPI_CS_GEN_AUTO;
@@ -140,7 +140,7 @@ main()
     //spi_send(0x8B, 0x2);
     //spi_send(0x8D, 0x4);
     //spi_send(0x8E, 0x8);
-    spi_send_burst(ptr_s, 9, 0x1);
+    //spi_send_burst(ptr_s, 9, 0x1);
 
 	  gpio_set(0, 1);
     gpio_set(1, 1);

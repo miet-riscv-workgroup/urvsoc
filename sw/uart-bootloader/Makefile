@@ -23,11 +23,11 @@ $(OUTPUT): $(LDS) $(OBJS)
 	${CC} -flto -O2 -Wl,--gc-sections -g  -march=$(ARCH) -o $(OUTPUT).elf -nostartfiles $(OBJS)  -lm -T $(LDS) -lc
 	${OBJCOPY} -O binary $(OUTPUT).elf $(OUTPUT).bin
 	${OBJDUMP} -D $(OUTPUT).elf > disasm.S
-	python3 ../gendatinit.py  $(OUTPUT).bin ../$(OUTPUT).dat
+	python3 ../gen_init.py  $(OUTPUT).bin $(OUTPUT).dat
 
 	$(SIZE) $(OUTPUT).elf
 clean:
-	rm -f $(OUTPUT).elf $(OUTPUT).bin $(OBJS)
+	rm -f $(OUTPUT).elf $(OUTPUT).bin $(OBJS) disasm.S
 
-%.o:	%.S
+%.o: %.S
 	${CC} -c -march=$(ARCH) $^ -o $@

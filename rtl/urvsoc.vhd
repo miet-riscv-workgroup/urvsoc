@@ -1,4 +1,4 @@
--- 
+--
 -- uRV - a tiny and dumb RISC-V core
 -- Copyright (c) 2015 CERN
 -- Author: Tomasz Włostowski <tomasz.wlostowski@cern.ch>
@@ -16,12 +16,8 @@
 -- You should have received a copy of the GNU Lesser General Public
 -- License along with this library; if not, write to the Free Software
 -- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
--- 
+--
 
---
--- rev1_top.vhd - top level for rev 1.1. PCB FPGA
---
---
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -40,23 +36,23 @@ entity urvsoc is
     g_num_slaves     : integer := 4
     );
   port (
-    resetn: in std_logic := '1';
-    
-    CLK100MHZ : in std_logic;  -- 125 MHz PLL reference
+    resetn     : in std_logic := '1';
+    CLK100MHZ  : in std_logic;
 
     uart_txd_o : out std_logic;
     uart_rxd_i : in  std_logic;
 
+    -- TODO make IRQ form button
+    -- IRQ works but should be connected
     --irq_i      : in std_logic_vector(7 downto 0);
 
     pad_cs_o   : out std_logic_vector(g_num_slaves-1 downto 0);
     pad_sclk_o : out std_logic;
     pad_mosi_o : out std_logic;
-    pad_miso_i : in  std_logic;    
+    pad_miso_i : in  std_logic;
 
-    leds_o: out std_logic_vector(3 downto 0);
-    sw    : in  std_logic_vector(3 downto 0);
-    ck_io : out std_logic_vector(41 downto 0) 
+    leds_o     : out std_logic_vector(3 downto 0);
+    ck_io      : out std_logic_vector(41 downto 0)
     );
 
 end urvsoc;
@@ -75,7 +71,7 @@ architecture rtl of urvsoc is
     generic (
       g_internal_ram_size      : integer;
       g_internal_ram_init_file : string;
-      g_simulation : boolean;
+      g_simulation             : boolean;
       g_address_bits           : integer--;
       --g_wishbone_start         : unsigned(31 downto 0)
       );
@@ -90,7 +86,7 @@ architecture rtl of urvsoc is
       host_slave_o : out t_wishbone_slave_out);
   end component urv_core;
 
-  component wb_spi is
+  component wb_spi_wrapper is
     generic (
       g_interface_mode      : t_wishbone_interface_mode;
       g_address_granularity : t_wishbone_address_granularity;
@@ -108,15 +104,13 @@ architecture rtl of urvsoc is
       pad_sclk_o : out std_logic;
       pad_mosi_o : out std_logic;
       pad_miso_i : in  std_logic);
-  end component wb_spi;
+  end component wb_spi_wrapper;
 
   component clk_pll is
     port
-    (clk_out1  : out  std_logic;
-     locked     : out  std_logic;
-     dac_clk    : out  std_logic;
-     ndac_clk : out std_logic;
-     clk_in1   : in  std_logic);
+    (clk_out  : out  std_logic;
+     locked   : out  std_logic;
+     clk_in   : in   std_logic);
   end component clk_pll;
 
   constant c_cnx_slave_ports  : integer := 1;
@@ -124,9 +118,9 @@ architecture rtl of urvsoc is
 
   constant c_master_cpu : integer := 0;
 
-  constant c_slave_gpio     : integer := 0;
-  constant c_slave_uart      : integer := 1;
-  constant c_slave_spi      : integer := 2;
+  constant c_slave_gpio : integer := 0;
+  constant c_slave_uart : integer := 1;
+  constant c_slave_spi  : integer := 2;
 
   signal cnx_slave_in  : t_wishbone_slave_in_array(c_cnx_slave_ports-1 downto 0);
   signal cnx_slave_out : t_wishbone_slave_out_array(c_cnx_slave_ports-1 downto 0);
@@ -135,56 +129,40 @@ architecture rtl of urvsoc is
   signal cnx_master_out : t_wishbone_master_out_array(c_cnx_master_ports-1 downto 0);
 
   constant c_cfg_base_addr : t_wishbone_address_array(c_cnx_master_ports-1 downto 0) :=
-    (c_slave_gpio => x"80001000",                  -- GPIO
-     c_slave_uart => x"80000000",                  -- UART
+    (c_slave_gpio => x"80001000",
+     c_slave_uart => x"80000000",
      c_slave_spi  => x"80003000"
      );
- 
+
   constant c_cfg_base_mask : t_wishbone_address_array(c_cnx_master_ports-1 downto 0) :=
     (c_slave_gpio => x"8000f000",
      c_slave_uart => x"8000f000",
      c_slave_spi  => x"8000f000"
    );
 
-  signal clk_125m_pllref : std_logic;
-  signal pllout_dac_clk: std_logic;
+  signal clk_100m_pllref : std_logic;
   signal reset_n_i : std_logic;
-  signal pllout_clk_fb_pllref, pllout_clk_sys, clk_sys, sys_locked, sys_locked_n : std_logic;
+  signal clk_sys, sys_locked, sys_locked_n : std_logic;
   signal rst_n_sys, rst_sys : std_logic;
 
   signal dummy, gpio_out, gpio_in, gpio_oen : std_logic_vector(31 downto 0);
-  signal dac_out : std_logic_vector(11 downto 0);
-  signal dac_clk : std_logic;
 begin  -- rtl
 
 
  U_Buf_CLK_PLL : IBUFG
     port map
-    (O  => clk_125m_pllref,             -- Buffer output
-     I  => CLK100MHZ);  -- buffer input (connect directly to top-level port)   
+    (O  => clk_100m_pllref,
+     I  => CLK100MHZ);
 
   cmp_sys_clk_pll : clk_pll
     port map
-    (clk_out1  => pllout_clk_sys,
-     dac_clk  => pllout_dac_clk,
-     ndac_clk => ck_io(26),
+    (clk_out  => clk_sys,
      locked   => sys_locked,
-     clk_in1    => clk_125m_pllref);
-
-  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
-  cmp_clk_sys_buf : BUFG
-    port map
-    (O => clk_sys,
-     I => pllout_clk_sys);      
-
-  cmp_dac_clk_buf : BUFG
-    port map
-    (O => dac_clk,
-     I => pllout_dac_clk); 
+     clk_in   => clk_100m_pllref);
 
   rst_sys <= not rst_n_sys;
   sys_locked_n <= not sys_locked;
-  
+
   U_Reset_Gen : urvsoc_reset_gen
     port map (
       clk_sys_i        => clk_sys,
@@ -207,7 +185,7 @@ begin  -- rtl
      irq_i        => x"00",
      dwb_o        => cnx_slave_in(0),
      dwb_i        => cnx_slave_out(0));
- 
+
   U_Intercon : xwb_crossbar
     generic map (
       g_num_masters => c_cnx_slave_ports,
@@ -235,7 +213,7 @@ begin  -- rtl
       uart_rxd_i => uart_rxd_i,
       uart_txd_o => uart_txd_o);
 
-  U_SPI : wb_spi
+  U_SPI : wb_spi_wrapper
     generic map (
       g_interface_mode      => PIPELINED,
       g_address_granularity => BYTE,
@@ -249,7 +227,6 @@ begin  -- rtl
       pad_sclk_o => pad_sclk_o,
       pad_mosi_o => pad_mosi_o,
       pad_miso_i => pad_miso_i);
-  
 
   U_GPIO : xwb_gpio_port
     generic map (
@@ -270,9 +247,5 @@ begin  -- rtl
 
   reset_n_i <= resetn;
   leds_o <= gpio_out(3 downto 0);
-  --gpio_in(7 downto 4) <= sw;
-  
-  -- ck_io(26) <= dac_clk;
-  ck_io(41 downto 30) <= dac_out;
-end rtl;
 
+end rtl;

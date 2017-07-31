@@ -1,0 +1,48 @@
+CAPI=1
+[main]
+name = ::urvsoc_open:0
+description = Modified URV system
+backend = vivado
+simulators = icarus
+
+depend = urv_core
+         general_cores
+
+[fileset xilinx_ip]
+usage = vivado
+files = ip/clk_pll/clk_pll.xci
+file_type = xci
+
+[fileset rtl]
+files =
+  rtl/urvsoc.vhd
+  rtl/urvsoc_reset_gen.vhd
+  rtl/wb_spi_wrapper.vhd
+file_type=vhdlSource
+
+[fileset dat]
+usage = vivado
+files =
+  sw/uart-bootloader/uart-bootloader.dat
+file_type=dat
+
+[fileset tb]
+usage = sim
+scope = private
+files = tb/urvsoc_tb.v[file_type=verilogSource]
+
+[simulator]
+toplevel = urvsoc_tb.v
+
+[icarus]
+iverilog_options = -W all
+
+[fileset constraints]
+usage = vivado
+file_type = xdc
+files = xdc/arty.xdc
+
+[vivado]
+part = "xc7a35tcsg324-1"
+hw_device = xc7a35t_0
+top_module = urvsoc

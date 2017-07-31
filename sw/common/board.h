@@ -29,9 +29,16 @@
 #define BASE_CLOCK 100000000 // Xtal frequency
 
 #define BASE_UART 0x80000000
-#define BASE_SPI  0x80003000
 #define BASE_GPIO 0x80001000
+#define BASE_SPI  0x80002000
 
+//DINS BASE ADDR
+#define BASE_REFCLK 0x80003000
+#define BASE_MLS    0x80004000
+#define BASE_IQ     0x80005000
+#define BASE_HPM    0x80006000
+#define BASE_AB     0x80007000
+//============================================================
 #define UART_BAUDRATE 115200
 
 static inline void writel ( uint32_t reg, uint32_t val)
