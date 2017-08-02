@@ -18,7 +18,7 @@ OUTPUT_SIM=$(OUTPUT)_sim
 all: setup
 
 setup:	$(LDS) $(OBJS)
-	${CC} -flto -O2 -Wl,--gc-sections -march=$(ARCH) -o $(OUTPUT).elf -nostartfiles $(OBJS)  -lm -T $(LDS) -lc
+	${CC} -flto -O0 -Wl,--gc-sections -march=$(ARCH) -o $(OUTPUT).elf -nostartfiles $(OBJS)  -lm -T $(LDS) -lc
 	${OBJCOPY} -O binary $(OUTPUT).elf $(OUTPUT).bin
 	${OBJDUMP} -D $(OUTPUT).elf > disasm.S
 	python3 ../gen_init.py  $(OUTPUT).bin $(OUTPUT).dat --offset

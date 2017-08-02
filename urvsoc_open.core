@@ -18,13 +18,8 @@ files =
   rtl/urvsoc.vhd
   rtl/urvsoc_reset_gen.vhd
   rtl/wb_spi_wrapper.vhd
+  sw/uart-bootloader/uart-bootloader.dat[is_include_file]
 file_type=vhdlSource
-
-[fileset dat]
-usage = vivado
-files =
-  sw/uart-bootloader/uart-bootloader.dat
-file_type=dat
 
 [fileset tb]
 usage = sim

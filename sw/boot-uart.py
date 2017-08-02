@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-#  our_port='/dev/ttyS3'
-our_port='COM4'
+our_port='/dev/ttyUSB1'
+#  our_port='COM4'
 
 import sys
 import time
@@ -20,13 +20,13 @@ while(ser.read(1) != b'B'):
 
 while(ser.read(1) != b'o'):
 	pass
-	
+
 while(ser.read(1) != b'o'):
 	pass
-	
+
 while(ser.read(1) != b't'):
 	pass
-	
+
 while(ser.read(1) != b'?'):
 	pass
 
@@ -49,7 +49,7 @@ n=0
 while True:
 	n = n+1
 	b = fr.read(1)
-	if n % 100 == 0: 		
+	if n % 100 == 0:
 		print("%d/%d bytes programmed." % (n,l))
 	if (b == b''):
 	    break

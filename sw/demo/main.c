@@ -107,27 +107,28 @@ void irq_7_handler()
 
 main()
 {
-  //uart_init_hw();
-  irq_enable_all();
-  irq_set_mask(0x01);
-  //disable_irq_0();
-
-  spi_config.CS_GEN       = SPI_CS_GEN_AUTO;
-  spi_config.IE_ENABLE    = SPI_IE_ENABLE_OFF;
-  spi_config.LSB_ORDER    = SPI_LSB_ORDER_LAST;
-  spi_config.TX_EDGE      = SPI_TX_EDGE_NEGEDGE;
-  spi_config.RX_EDGE      = SPI_RX_EDGE_POSEDGE;
-  spi_config.BAUDRATE     = 1000000;
-  spi_config.TRANSFER_LEN = 8;
-
-  spi_init(&spi_config);
-
-  uint32_t *ptr_r, *ptr_s;   
-  int a[] = {0x56, 0x43, 0x35, 0x27, 0x18, 0x6, 0x67, 0x48, 0x99};
-  int b[] = {0x56, 0x43, 0x35, 0x27, 0x18, 0x6, 0x67, 0x48, 0x99};
-  ptr_s = &a;
-  ptr_r = &b;
-  
+  /*  */
+  /* //uart_init_hw(); */
+  /* irq_enable_all(); */
+  /* irq_set_mask(0x01); */
+  /* //disable_irq_0(); */
+  /*  */
+  /* spi_config.CS_GEN       = SPI_CS_GEN_AUTO; */
+  /* spi_config.IE_ENABLE    = SPI_IE_ENABLE_OFF; */
+  /* spi_config.LSB_ORDER    = SPI_LSB_ORDER_LAST; */
+  /* spi_config.TX_EDGE      = SPI_TX_EDGE_NEGEDGE; */
+  /* spi_config.RX_EDGE      = SPI_RX_EDGE_POSEDGE; */
+  /* spi_config.BAUDRATE     = 1000000; */
+  /* spi_config.TRANSFER_LEN = 8; */
+  /*  */
+  /* spi_init(&spi_config); */
+  /*  */
+  /* uint32_t *ptr_r, *ptr_s;    */
+  /* int a[] = {0x56, 0x43, 0x35, 0x27, 0x18, 0x6, 0x67, 0x48, 0x99}; */
+  /* int b[] = {0x56, 0x43, 0x35, 0x27, 0x18, 0x6, 0x67, 0x48, 0x99}; */
+  /* ptr_s = &a; */
+  /* ptr_r = &b; */
+  /*  */
   for(;;)
     {
 
@@ -146,13 +147,13 @@ main()
     gpio_set(1, 1);
     gpio_set(2, 1);
     gpio_set(3, 1);
-    delay(100);
+    delay(10000000);
 
     gpio_set(0, 0);
     gpio_set(1, 0);
     gpio_set(2, 0);
     gpio_set(3, 0);
-    delay(100);
+    delay(10000000);
     
     }
 }
